@@ -8,6 +8,7 @@ import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.extension.isComplexType
 import com.v2ray.ang.extension.nullIfBlank
 import com.v2ray.ang.handler.AngConfigManager
+import com.v2ray.ang.handler.ServerLocationHint
 
 internal data class ServerRowUiModel(
     val guid: String,
@@ -17,6 +18,9 @@ internal data class ServerRowUiModel(
     val typeDescription: String,
     val testDelayMillis: Long,
     val subscriptionBadge: String,
+    val locationHint: ServerLocationHint = ServerLocationHint(),
+    val isFavorite: Boolean = false,
+    val lastUsedMs: Long = 0L,
 )
 
 internal data class ServerGroupUiState(
@@ -28,6 +32,9 @@ internal fun buildServerRowUiModel(
     server: ServersCache,
     subscriptionRemarks: String,
     aetherProtocolLabel: (AetherProtocol) -> String = AetherProtocol::name,
+    locationHint: ServerLocationHint = ServerLocationHint(),
+    isFavorite: Boolean = false,
+    lastUsedMs: Long = 0L,
 ): ServerRowUiModel {
     val profile = server.profile
     return ServerRowUiModel(
@@ -39,6 +46,9 @@ internal fun buildServerRowUiModel(
         typeDescription = serverProtocolDescription(profile, aetherProtocolLabel),
         testDelayMillis = server.testDelayMillis,
         subscriptionBadge = subscriptionRemarks.firstOrNull()?.toString().orEmpty(),
+        locationHint = locationHint,
+        isFavorite = isFavorite,
+        lastUsedMs = lastUsedMs,
     )
 }
 

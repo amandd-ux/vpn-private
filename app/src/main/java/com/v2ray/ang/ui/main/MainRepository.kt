@@ -20,8 +20,12 @@ import com.v2ray.ang.extension.serializable
 import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.AppLocaleManager
 import com.v2ray.ang.handler.MmkvManager
+import com.v2ray.ang.handler.ServerLocationHint
+import com.v2ray.ang.handler.ServerMetadataManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.SubscriptionUpdater
+import com.v2ray.ang.handler.TrafficSnapshot
+import com.v2ray.ang.handler.TrafficStatsManager
 import com.v2ray.ang.helper.MessageHelper
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
@@ -75,6 +79,7 @@ class MainRepository(
                 )
                 AppConfig.MSG_MEASURE_CONFIG_CANCEL -> MainServiceEvent.MeasureConfigCancelled(requestId)
                 AppConfig.MSG_SERVERS_CHANGED -> MainServiceEvent.ServersChanged
+                AppConfig.MSG_TRAFFIC_STATS -> MainServiceEvent.TrafficStatsUpdated
 
                 else -> null
             }
@@ -245,5 +250,55 @@ class MainRepository(
 
     override fun initAssets() {
         SettingsManager.initAssets(app, app.assets)
+    }
+
+    override fun getTrafficSnapshot(): TrafficSnapshot = TrafficStatsManager.getSnapshot()
+
+    override fun isSpeedStatsEnabled(): Boolean =
+        MmkvManager.decodeSettingsBool(AppConfig.PREF_SPEED_ENABLED, false)
+
+    override fun setSpeedStatsEnabled(enabled: Boolean) {
+        MmkvManager.encodeSettings(AppConfig.PREF_SPEED_ENABLED, enabled)
+    }
+
+    override fun resetTrafficStats() {
+        TrafficStatsManager.clearStatistics()
+    }
+
+    override fun getFavoriteGuids(): Set<String> = ServerMetadataManager.getFavoriteGuids()
+
+    override fun toggleFavorite(guid: String): Boolean = ServerMetadataManager.toggleFavorite(guid)
+
+    override fun recordServerUsed(guid: String) = ServerMetadataManager.recordServerUsed(guid)
+
+    override fun getAllRecentTimes(): Map<String, Long> = ServerMetadataManager.getAllRecentTimes()
+
+    override fun recordServerCountry(guid: String, country: String?) =
+        ServerMetadataManager.recordServerCountry(guid, country)
+
+    override fun extractLocationHint(guid: String, profile: ProfileItem): ServerLocationHint =
+        ServerMetadataManager.extractLocationHint(guid, profile)
+
+    override fun getVpnMode(): Boolean = SettingsManager.isVpnMode()
+
+    override fun isRootMode(): Boolean = SettingsManager.isRootMode()
+
+    override fun setConfirmRemove(enabled: Boolean) {
+        MmkvManager.encodeSettings(AppConfig.PREF_CONFIRM_REMOVE, enabled)
+    }
+
+    override fun setDoubleColumnDisplay(enabled: Boolean) {
+        MmkvManager.encodeSettings(AppConfig.PREF_DOUBLE_COLUMN_DISPLAY, enabled)
+    }
+
+    override fun setGroupAllDisplayEnabled(enabled: Boolean) {
+        MmkvManager.encodeSettings(AppConfig.PREF_GROUP_ALL_DISPLAY, enabled)
+    }
+
+    override fun getLanguageCode(): String =
+        MmkvManager.decodeSettingsString(AppConfig.PREF_LANGUAGE, "auto") ?: "auto"
+
+    override fun setLanguageCode(code: String) {
+        AppLocaleManager.setApplicationLanguage(code)
     }
 }

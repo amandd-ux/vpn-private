@@ -97,7 +97,13 @@ object WebDavManager {
                     return@withContext false
                 }
 
-                resp.body.byteStream().use { input ->
+                val body = resp.body
+                if (body == null) {
+                    LogUtil.e(AppConfig.TAG, "WebDAV download failed: $remote (empty response body)")
+                    return@withContext false
+                }
+
+                body.byteStream().use { input ->
                     destFile.parentFile?.mkdirs()
                     FileOutputStream(destFile).use { fos ->
                         input.copyTo(fos)

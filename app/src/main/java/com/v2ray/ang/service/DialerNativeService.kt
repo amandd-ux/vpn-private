@@ -227,7 +227,8 @@ class DialerNativeService : IDialerService {
         val token = runCatching {
             probeClient.newCall(request).execute().use { response ->
                 if (!response.isSuccessful) return null
-                extractControlToken(response.body.string())
+                val bodyString = response.body?.string() ?: return null
+                extractControlToken(bodyString)
             }
         }.getOrNull() ?: return null
         val host = uri.host ?: return null
@@ -539,7 +540,16 @@ class DialerNativeService : IDialerService {
                 upstreamCall = call
                 try {
                     call.execute().use { response ->
-                        val source = response.body.source()
+                        val body = response.body
+                        if (body == null) {
+                            try {
+                                controlSocket.send("fail")
+                            } catch (_: Exception) {
+                                // WebSocket may already be closed
+                            }
+                            return@use
+                        }
+                        val source = body.source()
                         val buffer = Buffer()
                         while (running.get() && !closed.get()) {
                             try {

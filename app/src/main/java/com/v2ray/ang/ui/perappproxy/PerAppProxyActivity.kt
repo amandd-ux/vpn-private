@@ -50,6 +50,7 @@ import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.ConfirmDialog
 import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.NavigationBarsBottomPadding
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.Utils
 
@@ -141,6 +142,7 @@ fun PerAppProxyScreen(
                 title = stringResource(R.string.per_app_proxy_settings),
                 onBackClick = onBackClick,
                 isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background,
                 isSearchActive = showSearch,
                 searchQuery = searchQuery,
                 onSearchQueryChange = { query ->
@@ -172,7 +174,7 @@ fun PerAppProxyScreen(
                         DropdownMenu(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             AppDropdownMenuItems(PerAppMenuAction.entries, { it.labelRes }) { action ->
                                 showMenu = false
@@ -193,11 +195,12 @@ fun PerAppProxyScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
         ) {
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = MaterialTheme.colorScheme.surface
+                color = MaterialTheme.colorScheme.surfaceContainer
             ) {
                 Row(
                     modifier = Modifier

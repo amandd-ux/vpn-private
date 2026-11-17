@@ -305,7 +305,7 @@ object AetherDelayTester {
     private fun timedRequest(client: OkHttpClient, request: Request, calls: ProbeCalls): Long? = try {
         val started = System.nanoTime()
         calls.start(client.newCall(request)).execute().use { response ->
-            response.body.source().readAll(blackholeSink())
+            response.body?.source()?.readAll(blackholeSink())
             if (response.code == 200 || response.code == 204) {
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - started)
             } else {

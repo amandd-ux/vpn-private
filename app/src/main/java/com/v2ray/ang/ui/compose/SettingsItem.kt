@@ -87,22 +87,24 @@ private fun SettingsItemRow(
     else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
     val descriptionColor = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant
     else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.38f)
+    val iconColor = if (enabled) MaterialTheme.colorScheme.primary
+    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .then(if (onClick != null) Modifier.clickable(enabled = enabled, onClick = onClick) else Modifier)
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (icon != null) {
             Icon(
                 painter = icon,
                 contentDescription = null,
-                modifier = Modifier.size(24.dp),
-                tint = titleColor
+                modifier = Modifier.size(22.dp),
+                tint = iconColor
             )
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(14.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
@@ -111,7 +113,7 @@ private fun SettingsItemRow(
                 color = titleColor
             )
             if (!description.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodySmall,
@@ -256,10 +258,12 @@ fun SettingsSwitchItem(
             Switch(
                 checked = checked,
                 onCheckedChange = if (enabled) onCheckedChange else null,
-                modifier = Modifier.scale(0.8f),
+                modifier = Modifier.scale(0.84f),
                 colors = SwitchDefaults.colors(
-                    checkedThumbColor = MaterialTheme.colorScheme.onSecondary,
-                    checkedTrackColor = MaterialTheme.colorScheme.secondary
+                    checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
+                    checkedTrackColor = MaterialTheme.colorScheme.primary,
+                    uncheckedThumbColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                    uncheckedTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                 ),
                 enabled = enabled
             )

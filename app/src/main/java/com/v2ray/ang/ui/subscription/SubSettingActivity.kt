@@ -52,6 +52,7 @@ import com.v2ray.ang.ui.compose.QRCodeDialog
 import com.v2ray.ang.ui.compose.ReorderableListItem
 import com.v2ray.ang.ui.compose.SelectListDialog
 import com.v2ray.ang.ui.compose.SettingsSwitchItem
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.Utils
 import sh.calvin.reorderable.ReorderableItem
@@ -164,6 +165,7 @@ fun SubSettingScreen(
                 title = stringResource(R.string.title_sub_setting),
                 onBackClick = onBackClick,
                 isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background,
                 actions = {
                     IconButton(onClick = onAddClick) {
                         Icon(painterResource(R.drawable.ic_add_24dp), contentDescription = stringResource(R.string.acc_add_subscription))
@@ -182,6 +184,7 @@ fun SubSettingScreen(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScrollbar(lazyListState),
             contentPadding = NavigationBarsBottomPadding()
@@ -357,7 +360,8 @@ fun SubSettingScreen(
                 TextButton(onClick = { showUpdateDialog = false }) {
                     Text(text = stringResource(R.string.action_cancel))
                 }
-            }
+            },
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
     }
 }

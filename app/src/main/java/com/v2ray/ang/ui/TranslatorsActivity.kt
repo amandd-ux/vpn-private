@@ -1,6 +1,7 @@
 package com.v2ray.ang.ui
 
 import android.os.Bundle
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -34,7 +36,9 @@ import com.v2ray.ang.dto.TranslatorsCredit
 import com.v2ray.ang.dto.TranslatorsParser
 import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.ui.compose.AppTopBar
+import com.v2ray.ang.ui.compose.LocalV2NgColors
 import com.v2ray.ang.ui.compose.NavigationBarsSpacer
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.util.Utils
 
 class TranslatorsActivity : BaseComponentActivity() {
@@ -61,13 +65,15 @@ fun TranslatorsScreen(onBackClick: () -> Unit) {
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.title_translators),
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                containerColor = MaterialTheme.colorScheme.background
             )
         }
     ) { innerPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -86,8 +92,10 @@ fun TranslatorsScreen(onBackClick: () -> Unit) {
 private fun TranslationCreditCard(credit: TranslatorsCredit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(0.8.dp, LocalV2NgColors.current.cardBorder.copy(alpha = 0.65f)),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         )
     ) {
         Column {

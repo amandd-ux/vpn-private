@@ -903,5 +903,14 @@
     <string name="v2ng_pref_compact_cards">کارت‌های فشرده سرور</string>
     <string name="v2ng_summary_compact_cards">فاصله‌گذاری فشرده‌تر در فهرست سرورها</string>
     <string name="v2ng_about_engine">مبتنی بر هسته VPN پات‌ان‌جی (Xray و Aether) تحت مجوز GPL-3.0.</string>
+    <string name="v2ng_connection_info">اطلاعات اتصال</string>
+    <string name="v2ng_subscription_plan">اشتراک</string>
+    <string name="v2ng_expires_on">انقضا %1$s</string>
+    <string name="v2ng_no_expiry">بدون انقضا</string>
+    <string name="v2ng_ready_to_connect">آماده برقراری تونل رمزنگاری‌شده</string>
+    <string name="v2ng_core_settings_button">تنظیمات کامل هسته و VPN</string>
+    <string name="v2ng_core_settings_summary">تنظیمات DNS، TUN، مالتی‌پلکس، پروکسی و حالت روت</string>
+    <string name="v2ng_acc_connect_button">اتصال یا قطع VPN</string>
+    <string name="v2ng_servers_count">%1$d سرور</string>
 
 </resources>

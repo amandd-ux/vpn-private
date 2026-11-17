@@ -3,6 +3,34 @@ package com.v2ray.ang.ui.main
 import com.v2ray.ang.dto.ConnectionTestResult
 import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.dto.LocateTarget
+import com.v2ray.ang.handler.ServerLocationHint
+import com.v2ray.ang.handler.TrafficSnapshot
+
+enum class ServerFilter {
+    ALL,
+    FAVORITES,
+    RECENT,
+    FAST,
+}
+
+enum class ServerSort {
+    DEFAULT,
+    LATENCY,
+    NAME,
+    RECENT,
+}
+
+/** Lightweight immutable model for the Home dashboard selected-server card. */
+data class SelectedServerSummary(
+    val guid: String,
+    val remarks: String,
+    val statistics: String,
+    val typeDescription: String,
+    val testDelayMillis: Long,
+    val locationHint: ServerLocationHint = ServerLocationHint(),
+    val subscriptionId: String = "",
+    val subscriptionTitle: String? = null,
+)
 
 /** Locale-neutral state formatted only when it reaches the main UI. */
 sealed interface MainStatus {
@@ -24,12 +52,24 @@ data class MainUiState(
     val selectedGroupId: String = "",
     val selectedGuid: String? = null,
     val isRunning: Boolean = false,
+    val isDisconnecting: Boolean = false,
     val isTesting: Boolean = false,
     val status: MainStatus = MainStatus.Disconnected,
+    val connectionError: String? = null,
     val locateTarget: LocateTarget? = null,
     val confirmRemove: Boolean = false,
     val doubleColumnDisplay: Boolean = false,
+    val groupAllDisplay: Boolean = false,
     val shareQRCodeBitmap: android.graphics.Bitmap? = null,
+    val trafficSnapshot: TrafficSnapshot = TrafficSnapshot(),
+    val isSpeedStatsEnabled: Boolean = false,
+    val serverFilter: ServerFilter = ServerFilter.ALL,
+    val serverSort: ServerSort = ServerSort.DEFAULT,
+    val favoriteGuids: Set<String> = emptySet(),
+    val selectedServerSummary: SelectedServerSummary? = null,
+    val vpnMode: Boolean = true,
+    val isRootMode: Boolean = false,
+    val languageCode: String = "auto",
     /**
      * PattNG: a move of a profile the storage refused, still to be told, by a number of its own, so that a refusal set
      * again right after the last one was told is told too; null when none, see [MainAction.MoveRefusalShown].
@@ -47,6 +87,7 @@ sealed interface MainAction {
     data object RefreshServiceState : MainAction
     data object RefreshGroups : MainAction
     data object ToggleService : MainAction
+    data object MarkDisconnecting : MainAction
     data object TestCurrentServer : MainAction
     data object TestAllServers : MainAction
     data object TestRealAllServers : MainAction
@@ -92,4 +133,17 @@ sealed interface MainAction {
 
     /** PattNG: the refusal of a move numbered [refusal], see [MainUiState.moveRefusal], was told. */
     data class MoveRefusalShown(val refusal: Int) : MainAction
+
+    // ---------- v2Ng UI Actions ----------
+    data class ToggleFavorite(val guid: String) : MainAction
+    data class SetServerFilter(val filter: ServerFilter) : MainAction
+    data class SetServerSort(val sort: ServerSort) : MainAction
+    data class SetSpeedStatsEnabled(val enabled: Boolean) : MainAction
+    data object EnableSpeedStats : MainAction
+    data object ResetTrafficStats : MainAction
+    data object ClearConnectionError : MainAction
+    data class SetDoubleColumnDisplay(val enabled: Boolean) : MainAction
+    data class SetGroupAllDisplay(val enabled: Boolean) : MainAction
+    data class SetConfirmRemove(val enabled: Boolean) : MainAction
+    data class SetLanguageCode(val code: String) : MainAction
 }

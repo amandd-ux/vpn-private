@@ -45,6 +45,7 @@ import com.v2ray.ang.ui.base.BaseComponentActivity
 import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.NavigationBarsBottomPadding
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
@@ -147,6 +148,7 @@ fun LogcatScreen(
                 title = stringResource(R.string.title_logcat),
                 onBackClick = onBackClick,
                 isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background,
                 isSearchActive = showSearch,
                 searchQuery = searchQuery,
                 onSearchQueryChange = {
@@ -194,6 +196,8 @@ fun LogcatScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = { viewModel.loadLogcat() },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.navigationBarsPadding()
             ) {
                 Icon(
@@ -206,6 +210,7 @@ fun LogcatScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
         ) {
             LazyColumn(

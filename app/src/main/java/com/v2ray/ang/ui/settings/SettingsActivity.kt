@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -50,6 +51,7 @@ import com.v2ray.ang.ui.compose.SettingsListItem
 import com.v2ray.ang.ui.compose.SettingsMenuItem
 import com.v2ray.ang.ui.compose.SettingsSwitchItem
 import com.v2ray.ang.ui.compose.ThemeManager
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
@@ -158,8 +160,8 @@ fun SettingsScreen(
             MmkvManager.decodeSettingsString(AppConfig.PREF_LANGUAGE, "auto") ?: "auto"
         )
     }
-    var uiModeNight by rememberMmkvString(AppConfig.PREF_UI_MODE_NIGHT, "0")
-    var dynamicColor by rememberMmkvBool(AppConfig.PREF_DYNAMIC_COLOR, true)
+    var uiModeNight by rememberMmkvString(AppConfig.PREF_UI_MODE_NIGHT, "2")
+    var dynamicColor by rememberMmkvBool(AppConfig.PREF_DYNAMIC_COLOR, false)
 
     var ipv6Enabled by rememberMmkvBool(AppConfig.PREF_IPV6_ENABLED, AppConfig.DEFAULT_IPV6_ENABLED)
     var preferIpv6 by rememberMmkvBool(AppConfig.PREF_PREFER_IPV6, false)
@@ -218,13 +220,15 @@ fun SettingsScreen(
             AppTopBar(
                 title = stringResource(R.string.title_settings),
                 onBackClick = onBackClick,
-                isLoading = isLoading
+                isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background
             )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScrollbar(scrollState)
                 .verticalScroll(scrollState)

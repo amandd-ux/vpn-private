@@ -73,7 +73,8 @@ fun AppTopBar(
     onSearchClose: () -> Unit = {},
     searchPlaceholder: String? = null,
     navigationIcon: @Composable (() -> Unit)? = null,
-    actions: @Composable RowScope.() -> Unit = {}
+    actions: @Composable RowScope.() -> Unit = {},
+    containerColor: Color = MaterialTheme.colorScheme.surface,
 ) {
     Column {
         TopAppBar(
@@ -85,7 +86,12 @@ fun AppTopBar(
                         placeholder = searchPlaceholder
                     )
                 } else {
-                    Text(text = title)
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
             },
             navigationIcon = {
@@ -102,7 +108,7 @@ fun AppTopBar(
             },
             actions = actions,
             colors = TopAppBarDefaults.topAppBarColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+                containerColor = containerColor,
                 titleContentColor = MaterialTheme.colorScheme.onSurface,
                 navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
                 actionIconContentColor = MaterialTheme.colorScheme.onSurface
@@ -113,7 +119,7 @@ fun AppTopBar(
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.secondary)
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.primary)
         }
     }
 }
@@ -282,11 +288,13 @@ fun ReorderableCollectionItemScope.reorderableDragHandle(): Modifier {
 fun ReorderableListItem(
     scope: ReorderableCollectionItemScope,
     isDragging: Boolean,
+    containerColor: Color = Color.Transparent,
     content: @Composable RowScope.() -> Unit
 ) {
     val elevation by reorderableElevation(isDragging)
     Surface(
         modifier = Modifier.fillMaxWidth(),
+        color = if (isDragging) MaterialTheme.colorScheme.surfaceContainerHigh else containerColor,
         shadowElevation = elevation
     ) {
         Row(
@@ -303,6 +311,7 @@ fun ReorderableListItem(
 fun ReorderableGridItem(
     scope: ReorderableCollectionItemScope,
     isDragging: Boolean,
+    containerColor: Color = Color.Transparent,
     content: @Composable () -> Unit
 ) {
     val elevation by reorderableElevation(isDragging)
@@ -310,6 +319,7 @@ fun ReorderableGridItem(
         modifier = Modifier
             .fillMaxWidth()
             .then(with(scope) { reorderableDragHandle() }),
+        color = if (isDragging) MaterialTheme.colorScheme.surfaceContainerHigh else containerColor,
         shadowElevation = elevation
     ) {
         content()

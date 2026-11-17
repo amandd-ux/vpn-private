@@ -5,7 +5,6 @@ import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
-import androidx.activity.compose.BackHandler
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.Composable
@@ -108,7 +107,6 @@ class MainActivity : HelperBaseComponentActivity() {
 
     @Composable
     override fun ScreenContent() {
-        BackHandler { moveTaskToBack(false) }
         MainScreen(
             mainViewModel = mainViewModel,
             onAction = { action ->
@@ -119,7 +117,10 @@ class MainActivity : HelperBaseComponentActivity() {
                     MainAction.ImportClipboard -> importClipboard()
                     MainAction.ImportConfigLocal -> importConfigLocal()
                     is MainAction.ImportManually -> importManually(action.type)
-                    MainAction.RestartService -> LauncherManager.restartServiceOrStart(this, ::requestServiceStart)
+                    MainAction.RestartService -> {
+                        mainViewModel.onAction(MainAction.ClearConnectionError)
+                        LauncherManager.restartServiceOrStart(this, ::requestServiceStart)
+                    }
                     MainAction.LocateSelectedServer -> mainViewModel.triggerLocateSelectedServer()
                     is MainAction.SelectServer -> setSelectServer(action.guid)
                     is MainAction.EditServer -> editServer(action.guid, action.profile)
@@ -132,6 +133,7 @@ class MainActivity : HelperBaseComponentActivity() {
                 }
             },
             onNavigate = { route -> navigateTo(route) },
+            onExitToBackground = { moveTaskToBack(false) },
         )
     }
 
@@ -181,11 +183,13 @@ class MainActivity : HelperBaseComponentActivity() {
 
     private fun handleFabAction() {
         if (mainViewModel.uiState.value.isRunning) {
+            mainViewModel.onAction(MainAction.MarkDisconnecting)
             LauncherManager.stopService(this)
             // A service whose process died takes no stop and answers nothing; asking for its state right
             // after lets that silence show the screen as stopped instead of leaving it connected.
             mainViewModel.onAction(MainAction.RefreshServiceState)
         } else {
+            mainViewModel.onAction(MainAction.ClearConnectionError)
             requestServiceStart()
         }
     }
@@ -210,8 +214,7 @@ class MainActivity : HelperBaseComponentActivity() {
             toast(R.string.title_file_chooser)
             return
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN
-        ) {
+        if (Build.VERSION.SDK_INT >= 37) {
             checkAndRequestPermission(PermissionType.ACCESS_LOCAL_NETWORK) {}
         }
         LauncherManager.startService(this)

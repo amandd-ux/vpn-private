@@ -61,6 +61,7 @@ import com.v2ray.ang.ui.compose.ReorderableListItem
 import com.v2ray.ang.ui.compose.SelectListDialog
 import com.v2ray.ang.ui.compose.SettingsListItem
 import com.v2ray.ang.ui.compose.colorConfigType
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.JsonUtil
 import com.v2ray.ang.util.LogUtil
@@ -231,6 +232,7 @@ fun RoutingSettingScreen(
             AppTopBar(
                 title = stringResource(R.string.routing_settings_title),
                 onBackClick = onBackClick,
+                containerColor = MaterialTheme.colorScheme.background,
                 actions = {
                     IconButton(onClick = onAddRule) {
                         Icon(
@@ -248,7 +250,7 @@ fun RoutingSettingScreen(
                         DropdownMenu(
                             expanded = showMenu,
                             onDismissRequest = { showMenu = false },
-                            containerColor = MaterialTheme.colorScheme.surface
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                         ) {
                             AppDropdownMenuItems(RoutingMenuAction.entries, { it.labelRes }) { action ->
                                 showMenu = false
@@ -269,6 +271,7 @@ fun RoutingSettingScreen(
             state = lazyListState,
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScrollbar(lazyListState),
             contentPadding = NavigationBarsBottomPadding()

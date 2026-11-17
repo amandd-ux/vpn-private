@@ -49,31 +49,31 @@ enum class V2NgAccent(
 ) {
     INDIGO(
         key = "indigo",
-        primaryDark = Color(0xFF7B6EF6),
-        primaryLight = Color(0xFF5046E5),
-        secondaryDark = Color(0xFF10D9A0),
-        secondaryLight = Color(0xFF059669),
+        primaryDark = Color(0xFF6E7BFF),
+        primaryLight = Color(0xFF4F5CEB),
+        secondaryDark = Color(0xFFA59BFF),
+        secondaryLight = Color(0xFF6D5DF6),
     ),
     CYAN(
         key = "cyan",
-        primaryDark = Color(0xFF22D3EE),
+        primaryDark = Color(0xFF38BDF8),
         primaryLight = Color(0xFF0284C7),
-        secondaryDark = Color(0xFF6D5DF6),
+        secondaryDark = Color(0xFF818CF8),
         secondaryLight = Color(0xFF4F46E5),
     ),
     EMERALD(
         key = "emerald",
-        primaryDark = Color(0xFF10D9A0),
+        primaryDark = Color(0xFF2DD4BF),
         primaryLight = Color(0xFF059669),
-        secondaryDark = Color(0xFF38BDF8),
+        secondaryDark = Color(0xFF60A5FA),
         secondaryLight = Color(0xFF0284C7),
     ),
     AMBER(
         key = "amber",
         primaryDark = Color(0xFFF59E0B),
         primaryLight = Color(0xFFD97706),
-        secondaryDark = Color(0xFF7B6EF6),
-        secondaryLight = Color(0xFF5046E5),
+        secondaryDark = Color(0xFF818CF8),
+        secondaryLight = Color(0xFF4F5CEB),
     );
 
     companion object {
@@ -95,6 +95,8 @@ data class V2NgExtendedColors(
     val cardBorder: Color,
     val heroGlowStart: Color,
     val heroGlowEnd: Color,
+    val bgTop: Color,
+    val bgBottom: Color,
     val monoFont: FontFamily,
 )
 
@@ -221,76 +223,76 @@ private fun buildLightColorScheme(accent: V2NgAccent): ColorScheme = lightColorS
     errorContainer = Color(0xFFFFE4E6),
     onError = Color.White,
     onErrorContainer = Color(0xFF881337),
-    background = Color(0xFFF6F8FC),
+    background = Color(0xFFF4F7FC),
     onBackground = Color(0xFF0F172A),
     surface = Color(0xFFFFFFFF),
     onSurface = Color(0xFF0F172A),
-    surfaceVariant = Color(0xFFE8EDF6),
+    surfaceVariant = Color(0xFFE6ECF7),
     onSurfaceVariant = Color(0xFF475569),
     outline = Color(0xFF94A3B8),
-    outlineVariant = Color(0xFFDDE3EE),
-    inverseSurface = Color(0xFF161E2E),
+    outlineVariant = Color(0xFFD9E2F2),
+    inverseSurface = Color(0xFF131F40),
     inverseOnSurface = Color(0xFFF8FAFC),
     inversePrimary = accent.primaryDark,
     scrim = Color(0xFF000000),
     surfaceTint = accent.primaryLight,
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF1F5FA),
-    surfaceContainer = Color(0xFFEAF0F7),
-    surfaceContainerHigh = Color(0xFFE2E8F2),
-    surfaceContainerHighest = Color(0xFFD8E0EC),
+    surfaceContainerLow = Color(0xFFF0F4FB),
+    surfaceContainer = Color(0xFFE9EFF9),
+    surfaceContainerHigh = Color(0xFFE0E8F5),
+    surfaceContainerHighest = Color(0xFFD5E0F0),
 )
 
 private fun buildDarkColorScheme(accent: V2NgAccent): ColorScheme = darkColorScheme(
     primary = accent.primaryDark,
-    onPrimary = Color(0xFF090D16),
+    onPrimary = Color(0xFFF6F8FF),
     primaryContainer = accent.primaryDark.copy(alpha = 0.18f),
-    onPrimaryContainer = accent.primaryDark.copy(alpha = 0.95f),
+    onPrimaryContainer = Color(0xFFE3E8FF),
     secondary = accent.secondaryDark,
-    onSecondary = Color(0xFF052E24),
-    secondaryContainer = accent.secondaryDark.copy(alpha = 0.16f),
+    onSecondary = Color(0xFF0B1124),
+    secondaryContainer = accent.secondaryDark.copy(alpha = 0.17f),
     onSecondaryContainer = accent.secondaryDark,
-    tertiary = Color(0xFF10D9A0),
-    onTertiary = Color(0xFF003828),
-    tertiaryContainer = Color(0xFF064E3B),
-    onTertiaryContainer = Color(0xFFA7F3D0),
+    tertiary = Color(0xFF2DD4BF),
+    onTertiary = Color(0xFF042F2E),
+    tertiaryContainer = Color(0xFF0A3A3A),
+    onTertiaryContainer = Color(0xFF99F6E4),
     error = Color(0xFFFB7185),
     errorContainer = Color(0xFF4C0519),
     onError = Color(0xFF4C0519),
     onErrorContainer = Color(0xFFFFE4E6),
-    background = Color(0xFF0B0F17),
-    onBackground = Color(0xFFF3F6FC),
-    surface = Color(0xFF111723),
-    onSurface = Color(0xFFF3F6FC),
-    surfaceVariant = Color(0xFF1E283B),
-    onSurfaceVariant = Color(0xFF9BA8C2),
-    outline = Color(0xFF475569),
-    outlineVariant = Color(0xFF232E42),
-    inverseSurface = Color(0xFFF3F6FC),
-    inverseOnSurface = Color(0xFF0B0F17),
+    background = Color(0xFF080E1E),
+    onBackground = Color(0xFFF4F7FF),
+    surface = Color(0xFF0B1328),
+    onSurface = Color(0xFFF4F7FF),
+    surfaceVariant = Color(0xFF182447),
+    onSurfaceVariant = Color(0xFF92A3CB),
+    outline = Color(0xFF4A5F94),
+    outlineVariant = Color(0xFF26386B),
+    inverseSurface = Color(0xFFF4F7FF),
+    inverseOnSurface = Color(0xFF080E1E),
     inversePrimary = accent.primaryLight,
     scrim = Color(0xFF000000),
     surfaceTint = accent.primaryDark,
-    surfaceContainerLowest = Color(0xFF070A10),
-    surfaceContainerLow = Color(0xFF111723),
-    surfaceContainer = Color(0xFF161E2E),
-    surfaceContainerHigh = Color(0xFF1D273B),
-    surfaceContainerHighest = Color(0xFF26324B),
+    surfaceContainerLowest = Color(0xFF050915),
+    surfaceContainerLow = Color(0xFF0E1832),
+    surfaceContainer = Color(0xFF131F40),
+    surfaceContainerHigh = Color(0xFF18264E),
+    surfaceContainerHighest = Color(0xFF203161),
 )
 
 // Semantic Colors preserved for legacy PattNG sub-screens & shared components
-val colorPing = Color(0xFF10B981)
-val colorPingRed = Color(0xFFF43F5E)
-val colorConfigType = Color(0xFF6D5DF6)
-val colorFabActive = Color(0xFF10D9A0)
+val colorPing = Color(0xFF2DD4BF)
+val colorPingRed = Color(0xFFFB7185)
+val colorConfigType = Color(0xFF818CF8)
+val colorFabActive = Color(0xFF2DD4BF)
 val colorFabInactiveLight = Color(0xFF94A3B8)
-val colorFabInactiveDark = Color(0xFF475569)
-val dividerColorLight = Color(0xFFE2E8F0)
-val dividerColorDark = Color(0xFF232E42)
+val colorFabInactiveDark = Color(0xFF3B4F82)
+val dividerColorLight = Color(0xFFDCE4F2)
+val dividerColorDark = Color(0xFF20315E)
 
 // Toast Colors 90%
 val toastNormalBgLight = Color(0xE61E293B)
-val toastNormalBgDark = Color(0xE6334155)
+val toastNormalBgDark = Color(0xE61A274A)
 val toastSuccessBg = Color(0xE6059669)
 val toastErrorBg = Color(0xE6E11D48)
 val toastInfoBg = Color(0xE64F46E5)
@@ -299,7 +301,7 @@ val toastTextColor = Color.White
 
 object ThemeManager {
     private val _themeMode = MutableStateFlow(
-        MmkvManager.decodeSettingsString(AppConfig.PREF_UI_MODE_NIGHT, "0") ?: "0"
+        MmkvManager.decodeSettingsString(AppConfig.PREF_UI_MODE_NIGHT, "2") ?: "2"
     )
     val themeMode: StateFlow<String> = _themeMode.asStateFlow()
 
@@ -370,7 +372,7 @@ object ThemeManager {
 
     fun refresh() {
         _themeMode.value =
-            MmkvManager.decodeSettingsString(AppConfig.PREF_UI_MODE_NIGHT, "0") ?: "0"
+            MmkvManager.decodeSettingsString(AppConfig.PREF_UI_MODE_NIGHT, "2") ?: "2"
         _dynamicColorEnabled.value =
             MmkvManager.decodeSettingsBool(AppConfig.PREF_DYNAMIC_COLOR, false)
         _accentColor.value = V2NgAccent.fromKey(
@@ -397,22 +399,24 @@ fun resolveDarkTheme(): Boolean {
     }
 }
 
-val LocalDarkTheme = compositionLocalOf { false }
+val LocalDarkTheme = compositionLocalOf { true }
 
 val LocalV2NgColors = compositionLocalOf {
     V2NgExtendedColors(
-        connected = Color(0xFF10D9A0),
-        connectedContainer = Color(0x2210D9A0),
-        connecting = Color(0xFFF59E0B),
-        connectingContainer = Color(0x22F59E0B),
-        disconnected = Color(0xFF64748B),
-        error = Color(0xFFF43F5E),
-        errorContainer = Color(0x22F43F5E),
-        downloadAccent = Color(0xFF10D9A0),
-        uploadAccent = Color(0xFF7B6EF6),
-        cardBorder = Color(0xFF232E42),
-        heroGlowStart = Color(0x337B6EF6),
-        heroGlowEnd = Color(0x0010D9A0),
+        connected = Color(0xFF2DD4BF),
+        connectedContainer = Color(0x202DD4BF),
+        connecting = Color(0xFFFBBF24),
+        connectingContainer = Color(0x20FBBF24),
+        disconnected = Color(0xFF7B8DB8),
+        error = Color(0xFFFB7185),
+        errorContainer = Color(0x24FB7185),
+        downloadAccent = Color(0xFF38BDF8),
+        uploadAccent = Color(0xFF818CF8),
+        cardBorder = Color(0xFF273A70),
+        heroGlowStart = Color(0x386E7BFF),
+        heroGlowEnd = Color(0x14A59BFF),
+        bgTop = Color(0xFF080E1E),
+        bgBottom = Color(0xFF0C152E),
         monoFont = V2NgMonoFamily,
     )
 }
@@ -439,18 +443,20 @@ fun AppTheme(
 
     val extendedColors = if (darkTheme) {
         V2NgExtendedColors(
-            connected = Color(0xFF10D9A0),
-            connectedContainer = Color(0x1F10D9A0),
+            connected = Color(0xFF2DD4BF),
+            connectedContainer = Color(0x1F2DD4BF),
             connecting = Color(0xFFFBBF24),
             connectingContainer = Color(0x1FFBBF24),
-            disconnected = Color(0xFF64748B),
+            disconnected = Color(0xFF7B8DB8),
             error = Color(0xFFFB7185),
             errorContainer = Color(0x26FB7185),
-            downloadAccent = Color(0xFF10D9A0),
+            downloadAccent = Color(0xFF38BDF8),
             uploadAccent = accent.primaryDark,
-            cardBorder = Color(0xFF232E42),
-            heroGlowStart = accent.primaryDark.copy(alpha = 0.24f),
-            heroGlowEnd = accent.secondaryDark.copy(alpha = 0.06f),
+            cardBorder = Color(0xFF273A70),
+            heroGlowStart = accent.primaryDark.copy(alpha = 0.28f),
+            heroGlowEnd = accent.secondaryDark.copy(alpha = 0.08f),
+            bgTop = Color(0xFF080E1E),
+            bgBottom = Color(0xFF0D1734),
             monoFont = V2NgMonoFamily,
         )
     } else {
@@ -462,11 +468,13 @@ fun AppTheme(
             disconnected = Color(0xFF64748B),
             error = Color(0xFFE11D48),
             errorContainer = Color(0x1AE11D48),
-            downloadAccent = Color(0xFF059669),
+            downloadAccent = Color(0xFF0284C7),
             uploadAccent = accent.primaryLight,
-            cardBorder = Color(0xFFE2E8F0),
+            cardBorder = Color(0xFFD5E0F2),
             heroGlowStart = accent.primaryLight.copy(alpha = 0.14f),
-            heroGlowEnd = accent.secondaryLight.copy(alpha = 0.04f),
+            heroGlowEnd = accent.secondaryLight.copy(alpha = 0.05f),
+            bgTop = Color(0xFFF4F7FC),
+            bgBottom = Color(0xFFEAF0FA),
             monoFont = V2NgMonoFamily,
         )
     }

@@ -6,6 +6,8 @@ import com.v2ray.ang.dto.entities.ProfileItem
 import com.v2ray.ang.dto.entities.ServerAffiliationInfo
 import com.v2ray.ang.dto.entities.SubscriptionCache
 import com.v2ray.ang.dto.entities.SubscriptionItem
+import com.v2ray.ang.handler.ServerLocationHint
+import com.v2ray.ang.handler.TrafficSnapshot
 import kotlinx.coroutines.flow.Flow
 import java.io.Closeable
 
@@ -77,4 +79,26 @@ interface MainDataSource : Closeable {
 
     fun syncSubscriptions()
     fun initAssets()
+
+    // ---------- v2Ng non-invasive telemetry, metadata & UI preferences ----------
+    fun getTrafficSnapshot(): TrafficSnapshot = TrafficSnapshot()
+    fun isSpeedStatsEnabled(): Boolean = false
+    fun setSpeedStatsEnabled(enabled: Boolean) {}
+    fun resetTrafficStats() {}
+
+    fun getFavoriteGuids(): Set<String> = emptySet()
+    fun toggleFavorite(guid: String): Boolean = false
+    fun recordServerUsed(guid: String) {}
+    fun getAllRecentTimes(): Map<String, Long> = emptyMap()
+    fun recordServerCountry(guid: String, country: String?) {}
+    fun extractLocationHint(guid: String, profile: ProfileItem): ServerLocationHint = ServerLocationHint()
+
+    fun getVpnMode(): Boolean = true
+    fun isRootMode(): Boolean = false
+
+    fun setConfirmRemove(enabled: Boolean) {}
+    fun setDoubleColumnDisplay(enabled: Boolean) {}
+    fun setGroupAllDisplayEnabled(enabled: Boolean) {}
+    fun getLanguageCode(): String = "auto"
+    fun setLanguageCode(code: String) {}
 }

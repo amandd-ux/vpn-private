@@ -30,6 +30,7 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.delay as coroutineDelay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +38,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -84,7 +86,13 @@ class MainViewModel(
             selectedGroupId = dataSource.getSelectedSubscriptionId(),
             selectedGuid = dataSource.getSelectServer(),
             confirmRemove = dataSource.getConfirmRemove(),
-            doubleColumnDisplay = dataSource.getDoubleColumnDisplay()
+            doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
+            groupAllDisplay = dataSource.isGroupAllDisplayEnabled(),
+            isSpeedStatsEnabled = dataSource.isSpeedStatsEnabled(),
+            favoriteGuids = dataSource.getFavoriteGuids(),
+            vpnMode = dataSource.getVpnMode(),
+            isRootMode = dataSource.isRootMode(),
+            languageCode = dataSource.getLanguageCode(),
         )
     )
     val uiState: StateFlow<MainUiState> = _uiState.asStateFlow()
@@ -137,6 +145,8 @@ class MainViewModel(
     private var selectedGroupLoadJob: Job? = null
     private var reloadJob: Job? = null
     private var testResultFlushJob: Job? = null
+    private var telemetryJob: Job? = null
+    private var selectedSummaryJob: Job? = null
     private val pendingTestResults = linkedMapOf<String, Long>()
 
     private val testRequests = MainTestRequests()
@@ -159,6 +169,8 @@ class MainViewModel(
     init {
         collectServiceEvents()
         setupGroupTab()
+        refreshTrafficSnapshot()
+        refreshSelectedServerSummary(_uiState.value.selectedGuid)
     }
 
     private fun collectServiceEvents() {
@@ -175,23 +187,35 @@ class MainViewModel(
             MainServiceEvent.StateNotRunning -> updateRunningState(false, clearTestingText = false)
             MainServiceEvent.StateStartSuccess -> {
                 toastSuccess(R.string.toast_services_success)
+                _uiState.value.selectedGuid?.takeIf { it.isNotBlank() }?.let { guid ->
+                    viewModelScope.launch(ioDispatcher) { dataSource.recordServerUsed(guid) }
+                }
                 updateRunningState(true)
             }
 
             is MainServiceEvent.StateStartFailure -> {
                 // The daemon attaches a reason only when it is a localized resource string, e.g.
                 // the Aether core stopping or missing on this ABI; the generic text is the fallback.
-                if (!event.message.isNullOrBlank()) {
+                val message = if (!event.message.isNullOrBlank()) {
                     toastError(event.message)
+                    event.message
                 } else {
                     toastError(R.string.toast_services_failure)
+                    dataSource.getString(R.string.toast_services_failure)
                 }
+                _uiState.update { it.copy(connectionError = message, isDisconnecting = false) }
                 updateRunningState(false)
             }
 
             is MainServiceEvent.StateConnecting -> {
                 if (uiState.value.isRunning) {
-                    _uiState.update { it.copy(status = MainStatus.Connecting(event.message)) }
+                    _uiState.update {
+                        it.copy(
+                            status = MainStatus.Connecting(event.message),
+                            isDisconnecting = false,
+                            connectionError = null,
+                        )
+                    }
                 }
             }
 
@@ -200,6 +224,15 @@ class MainViewModel(
                 // PattNG: the delay, then the IP lookup, of this request only; a late reply to an older one changes nothing.
                 if (!uiState.value.isRunning || !testRequests.answerCurrent(event.requestId)) return
                 _uiState.update { it.copy(isTesting = testRequests.isTesting, status = MainStatus.ConnectionTest(event.result)) }
+                val activeGuid = _uiState.value.selectedGuid
+                if (activeGuid != null && event.result.delayMillis >= 0L) {
+                    viewModelScope.launch(ioDispatcher) {
+                        if (!event.result.country.isNullOrBlank()) {
+                            dataSource.recordServerCountry(activeGuid, event.result.country)
+                        }
+                        refreshSelectedServerSummary(activeGuid, overrideDelay = event.result.delayMillis)
+                    }
+                }
             }
 
             is MainServiceEvent.MeasureConfigSuccess -> {
@@ -237,6 +270,7 @@ class MainViewModel(
             }
 
             MainServiceEvent.ServersChanged -> setupGroupTab(forceRefresh = true)
+            MainServiceEvent.TrafficStatsUpdated -> refreshTrafficSnapshot()
         }
     }
 
@@ -334,6 +368,9 @@ class MainViewModel(
             MainAction.Initialize -> initialize()
             MainAction.RefreshServiceState -> dataSource.queryServiceState()
             MainAction.RefreshGroups -> setupGroupTab(forceRefresh = true)
+            MainAction.MarkDisconnecting -> _uiState.update {
+                it.copy(isDisconnecting = true, connectionError = null)
+            }
             MainAction.TestAllServers -> testAllRealPing(true)
             MainAction.TestRealAllServers -> testAllRealPing()
             MainAction.CancelTesting -> cancelAllPing()
@@ -362,6 +399,18 @@ class MainViewModel(
             MainAction.DismissQRCodeDialog -> {
                 _uiState.update { it.copy(shareQRCodeBitmap = null) }
             }
+
+            is MainAction.ToggleFavorite -> toggleFavorite(action.guid)
+            is MainAction.SetServerFilter -> setServerFilter(action.filter)
+            is MainAction.SetServerSort -> setServerSort(action.sort)
+            MainAction.EnableSpeedStats -> setSpeedStatsEnabled(true)
+            is MainAction.SetSpeedStatsEnabled -> setSpeedStatsEnabled(action.enabled)
+            MainAction.ResetTrafficStats -> resetTrafficStats()
+            MainAction.ClearConnectionError -> _uiState.update { it.copy(connectionError = null) }
+            is MainAction.SetDoubleColumnDisplay -> setDoubleColumnDisplay(action.enabled)
+            is MainAction.SetGroupAllDisplay -> setGroupAllDisplay(action.enabled)
+            is MainAction.SetConfirmRemove -> setConfirmRemove(action.enabled)
+            is MainAction.SetLanguageCode -> setLanguageCode(action.code)
 
             MainAction.ToggleService,
             MainAction.TestCurrentServer,
@@ -402,9 +451,17 @@ class MainViewModel(
         _uiState.update {
             it.copy(
                 confirmRemove = dataSource.getConfirmRemove(),
-                doubleColumnDisplay = dataSource.getDoubleColumnDisplay()
+                doubleColumnDisplay = dataSource.getDoubleColumnDisplay(),
+                groupAllDisplay = dataSource.isGroupAllDisplayEnabled(),
+                isSpeedStatsEnabled = dataSource.isSpeedStatsEnabled(),
+                favoriteGuids = dataSource.getFavoriteGuids(),
+                vpnMode = dataSource.getVpnMode(),
+                isRootMode = dataSource.isRootMode(),
+                languageCode = dataSource.getLanguageCode(),
             )
         }
+        refreshTrafficSnapshot()
+        refreshSelectedServerSummary(_uiState.value.selectedGuid)
     }
 
     // ---------- Group & server loading ----------
@@ -463,6 +520,41 @@ class MainViewModel(
         }
     }
 
+    private fun applyFilterAndSort(
+        servers: List<ServersCache>,
+        filter: ServerFilter,
+        sort: ServerSort,
+        favoriteGuids: Set<String>,
+        recentTimes: Map<String, Long>,
+    ): List<ServersCache> {
+        if (filter == ServerFilter.ALL && sort == ServerSort.DEFAULT) return servers
+
+        val filtered = when (filter) {
+            ServerFilter.ALL -> servers
+            ServerFilter.FAVORITES -> servers.filter { it.guid in favoriteGuids }
+            ServerFilter.RECENT -> servers.filter { (recentTimes[it.guid] ?: 0L) > 0L }
+            ServerFilter.FAST -> servers.filter { it.testDelayMillis in 1L..499L }
+        }
+
+        return when (sort) {
+            ServerSort.DEFAULT -> filtered
+            ServerSort.LATENCY -> filtered.sortedWith(
+                compareBy<ServersCache> { server ->
+                    when {
+                        server.testDelayMillis > 0L -> server.testDelayMillis
+                        server.testDelayMillis == 0L -> Long.MAX_VALUE - 1
+                        else -> Long.MAX_VALUE
+                    }
+                }.thenBy { it.profile.remarks.lowercase() }
+            )
+            ServerSort.NAME -> filtered.sortedBy { it.profile.remarks.lowercase() }
+            ServerSort.RECENT -> filtered.sortedWith(
+                compareByDescending<ServersCache> { recentTimes[it.guid] ?: 0L }
+                    .thenBy { it.profile.remarks.lowercase() }
+            )
+        }
+    }
+
     /**
      * Shows [reading] of the group [groupId]. PattNG: as [readingFate] decides: not over a newer reading shown, and not
      * when a move of the group was shown that was not settled when the group was read, which the reading would undo on
@@ -471,10 +563,25 @@ class MainViewModel(
      */
     private fun updateGroupUi(groupId: String, reading: GroupReading) {
         val filter = keywordFilter
-        val filteredServers = applyKeywordFilter(reading.servers, filter)
+        val uiSnapshot = _uiState.value
+        val activeFilter = uiSnapshot.serverFilter
+        val activeSort = uiSnapshot.serverSort
+        val keywordFiltered = applyKeywordFilter(reading.servers, filter)
+        val recentTimes = if (activeFilter == ServerFilter.RECENT || activeSort == ServerSort.RECENT) {
+            dataSource.getAllRecentTimes()
+        } else {
+            emptyMap()
+        }
+        val finalServers = applyFilterAndSort(
+            servers = keywordFiltered,
+            filter = activeFilter,
+            sort = activeSort,
+            favoriteGuids = uiSnapshot.favoriteGuids,
+            recentTimes = recentTimes,
+        )
         val state = ServerGroupUiState(
-            servers = filteredServers,
-            rows = buildServerRows(groupId, filteredServers)
+            servers = finalServers,
+            rows = buildServerRows(groupId, finalServers, uiSnapshot.favoriteGuids, recentTimes)
         )
         val readAgain = synchronized(groupShowLock) {
             val fate = readingFate(
@@ -504,7 +611,12 @@ class MainViewModel(
         withContext(defaultDispatcher) { updateGroupUi(groupId, reading) }
     }
 
-    private fun buildServerRows(groupId: String, servers: List<ServersCache>): List<ServerRowUiModel> {
+    private fun buildServerRows(
+        groupId: String,
+        servers: List<ServersCache>,
+        favoriteGuids: Set<String> = _uiState.value.favoriteGuids,
+        recentTimes: Map<String, Long> = emptyMap(),
+    ): List<ServerRowUiModel> {
         val subscriptionRemarks = if (groupId.isEmpty()) {
             servers.asSequence()
                 .map { it.profile.subscriptionId }
@@ -521,6 +633,9 @@ class MainViewModel(
                 server = server,
                 subscriptionRemarks = subscriptionRemarks[server.profile.subscriptionId].orEmpty(),
                 aetherProtocolLabel = aetherProtocolLabel,
+                locationHint = dataSource.extractLocationHint(server.guid, server.profile),
+                isFavorite = server.guid in favoriteGuids,
+                lastUsedMs = recentTimes[server.guid] ?: 0L,
             )
         }
     }
@@ -593,6 +708,7 @@ class MainViewModel(
 
                 val selectedServers = loadGroup(selectedGroup, forceRefresh)
                 updateGroupUi(selectedGroup, selectedServers)
+                refreshSelectedServerSummary(_uiState.value.selectedGuid)
 
                 if (!initialPageReady.isCompleted) {
                     initialPageReady.complete(Unit)
@@ -891,11 +1007,142 @@ class MainViewModel(
 
     fun updateSelectedGuid(guid: String) {
         dataSource.setSelectServer(guid)
-        _uiState.update { it.copy(selectedGuid = guid) }
+        dataSource.recordServerUsed(guid)
+        _uiState.update { it.copy(selectedGuid = guid, connectionError = null) }
+        refreshSelectedServerSummary(guid)
+        if (_uiState.value.serverFilter == ServerFilter.RECENT || _uiState.value.serverSort == ServerSort.RECENT) {
+            reapplyCachedGroupView()
+        }
     }
 
     fun refreshSelectedGuid() {
-        _uiState.update { it.copy(selectedGuid = dataSource.getSelectServer()) }
+        val guid = dataSource.getSelectServer()
+        _uiState.update { it.copy(selectedGuid = guid) }
+        refreshSelectedServerSummary(guid)
+    }
+
+    private fun reapplyCachedGroupView() {
+        viewModelScope.launch(defaultDispatcher) {
+            val snapshot = cacheMutex.withLock {
+                groupDataCache.mapValues { (groupId, servers) ->
+                    GroupReading(servers, settledMoves.getOrDefault(groupId, 0), readingNumbers.getOrDefault(groupId, 0))
+                }
+            }
+            snapshot.forEach { (groupId, reading) ->
+                ensureActive()
+                updateGroupUi(groupId, reading)
+            }
+        }
+    }
+
+    fun toggleFavorite(guid: String) {
+        if (guid.isBlank()) return
+        viewModelScope.launch(ioDispatcher) {
+            dataSource.toggleFavorite(guid)
+            val updatedFavs = dataSource.getFavoriteGuids()
+            _uiState.update { it.copy(favoriteGuids = updatedFavs) }
+            reapplyCachedGroupView()
+        }
+    }
+
+    fun setServerFilter(filter: ServerFilter) {
+        if (_uiState.value.serverFilter == filter) return
+        _uiState.update { it.copy(serverFilter = filter) }
+        reapplyCachedGroupView()
+    }
+
+    fun setServerSort(sort: ServerSort) {
+        if (_uiState.value.serverSort == sort) return
+        _uiState.update { it.copy(serverSort = sort) }
+        reapplyCachedGroupView()
+    }
+
+    private fun setSpeedStatsEnabled(enabled: Boolean) {
+        dataSource.setSpeedStatsEnabled(enabled)
+        _uiState.update { it.copy(isSpeedStatsEnabled = enabled) }
+        refreshTrafficSnapshot()
+    }
+
+    private fun resetTrafficStats() {
+        viewModelScope.launch(ioDispatcher) {
+            dataSource.resetTrafficStats()
+            val snapshot = dataSource.getTrafficSnapshot()
+            _uiState.update { it.copy(trafficSnapshot = snapshot) }
+        }
+    }
+
+    private fun setDoubleColumnDisplay(enabled: Boolean) {
+        dataSource.setDoubleColumnDisplay(enabled)
+        _uiState.update { it.copy(doubleColumnDisplay = enabled) }
+    }
+
+    private fun setGroupAllDisplay(enabled: Boolean) {
+        dataSource.setGroupAllDisplayEnabled(enabled)
+        _uiState.update { it.copy(groupAllDisplay = enabled) }
+        setupGroupTab(forceRefresh = true)
+    }
+
+    private fun setConfirmRemove(enabled: Boolean) {
+        dataSource.setConfirmRemove(enabled)
+        _uiState.update { it.copy(confirmRemove = enabled) }
+    }
+
+    private fun setLanguageCode(code: String) {
+        dataSource.setLanguageCode(code)
+        _uiState.update { it.copy(languageCode = code) }
+    }
+
+    private fun refreshTrafficSnapshot() {
+        viewModelScope.launch(ioDispatcher) {
+            val snapshot = dataSource.getTrafficSnapshot()
+            _uiState.update { it.copy(trafficSnapshot = snapshot) }
+        }
+    }
+
+    private fun refreshSelectedServerSummary(guid: String?, overrideDelay: Long? = null) {
+        if (guid.isNullOrBlank()) {
+            _uiState.update { it.copy(selectedServerSummary = null) }
+            return
+        }
+        selectedSummaryJob?.cancel()
+        selectedSummaryJob = viewModelScope.launch(ioDispatcher) {
+            val profile = dataSource.decodeServerConfig(guid)
+            if (profile == null) {
+                _uiState.update { it.copy(selectedServerSummary = null) }
+                return@launch
+            }
+            val delayMillis = overrideDelay
+                ?: dataSource.decodeAffiliationInfo(guid)?.testDelayMillis
+                ?: 0L
+            val groupTitle = _uiState.value.groups
+                .firstOrNull { it.id == profile.subscriptionId }
+                ?.remarks
+                ?: if (profile.subscriptionId.isNotEmpty()) {
+                    dataSource.getSubscriptionItem(profile.subscriptionId)?.remarks
+                } else {
+                    null
+                }
+            val row = buildServerRowUiModel(
+                server = ServersCache(guid = guid, profile = profile, testDelayMillis = delayMillis),
+                subscriptionRemarks = groupTitle.orEmpty(),
+                aetherProtocolLabel = aetherProtocolLabel,
+                locationHint = dataSource.extractLocationHint(guid, profile),
+            )
+            _uiState.update {
+                it.copy(
+                    selectedServerSummary = SelectedServerSummary(
+                        guid = guid,
+                        remarks = row.remarks,
+                        statistics = row.statistics,
+                        typeDescription = row.typeDescription,
+                        testDelayMillis = delayMillis,
+                        locationHint = row.locationHint,
+                        subscriptionId = profile.subscriptionId,
+                        subscriptionTitle = groupTitle?.takeIf { title -> title.isNotBlank() },
+                    )
+                )
+            }
+        }
     }
 
     fun removeServerAndRefresh(guid: String) {
@@ -1105,13 +1352,31 @@ class MainViewModel(
         _uiState.update { state ->
             state.copy(
                 isRunning = running,
+                isDisconnecting = false,
+                connectionError = if (running) null else state.connectionError,
                 isTesting = testRequests.isTesting,
                 status = runningStatus(state.status, state.isRunning, running, clearTestingText)
             )
         }
+        if (running) {
+            if (telemetryJob?.isActive != true) {
+                telemetryJob = viewModelScope.launch {
+                    while (isActive) {
+                        refreshTrafficSnapshot()
+                        coroutineDelay(1_000L)
+                    }
+                }
+            }
+        } else {
+            telemetryJob?.cancel()
+            telemetryJob = null
+            refreshTrafficSnapshot()
+        }
     }
 
     override fun onCleared() {
+        telemetryJob?.cancel()
+        selectedSummaryJob?.cancel()
         setupGroupJob?.cancel()
         preloadJob?.cancel()
         selectedGroupLoadJob?.cancel()

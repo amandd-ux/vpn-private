@@ -61,6 +61,7 @@ import com.v2ray.ang.ui.compose.DeleteConfirmDialog
 import com.v2ray.ang.ui.compose.ItemDivider
 import com.v2ray.ang.ui.compose.NavigationBarsBottomPadding
 import com.v2ray.ang.ui.compose.SettingsListItem
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.LogUtil
 import com.v2ray.ang.util.Utils
@@ -275,6 +276,7 @@ internal fun UserAssetScreen(
                 title = stringResource(R.string.title_user_asset_setting),
                 onBackClick = onBackClick,
                 isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background,
                 actions = {
                     Box(modifier = Modifier.wrapContentSize(Alignment.TopEnd)) {
                         IconButton(onClick = { showAddMenu = true }) {
@@ -283,7 +285,7 @@ internal fun UserAssetScreen(
                         DropdownMenu(
                             expanded = showAddMenu,
                             onDismissRequest = { showAddMenu = false },
-                            containerColor = MaterialTheme.colorScheme.surface,
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                             offset = DpOffset(x = 0.dp, y = 0.dp),
                             modifier = Modifier.wrapContentWidth(Alignment.End)
                         ) {
@@ -308,6 +310,7 @@ internal fun UserAssetScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScrollbar(listState),
             contentPadding = NavigationBarsBottomPadding()

@@ -5,14 +5,15 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.viewModels
 import androidx.annotation.StringRes
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -37,6 +38,7 @@ import com.v2ray.ang.extension.toastError
 import com.v2ray.ang.extension.toastSuccess
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.ui.base.HelperBaseComponentActivity
+import com.v2ray.ang.ui.compose.AppDivider
 import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.DeleteConfirmDialog
 import com.v2ray.ang.ui.compose.InputDialog
@@ -44,6 +46,8 @@ import com.v2ray.ang.ui.compose.InputField
 import com.v2ray.ang.ui.compose.NavigationBarsSpacer
 import com.v2ray.ang.ui.compose.SelectListDialog
 import com.v2ray.ang.ui.compose.SettingsMenuItem
+import com.v2ray.ang.ui.compose.V2NgSectionCard
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.util.LogUtil
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -208,44 +212,54 @@ fun BackupScreen(
             AppTopBar(
                 title = stringResource(R.string.title_configuration_backup_restore),
                 onBackClick = onBackClick,
-                isLoading = isLoading
+                isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background
             )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_backup_24dp),
-                title = stringResource(R.string.title_configuration_backup),
-                onClick = { showBackupDialog = true }
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_share_24dp),
-                title = stringResource(R.string.title_configuration_share),
-                onClick = onShareClick
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_restore_24dp),
-                title = stringResource(R.string.title_configuration_restore),
-                onClick = { showRestoreDialog = true }
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_delete_24dp),
-                title = stringResource(R.string.title_profile_storage_cleanup),
-                subtitle = stringResource(R.string.summary_profile_storage_cleanup),
-                onClick = { showCleanupDialog = true }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_settings_24dp),
-                title = stringResource(R.string.title_webdav_config_setting),
-                subtitle = webDavSummary,
-                onClick = { showWebDavDialog = true }
-            )
+            V2NgSectionCard(modifier = Modifier.fillMaxWidth()) {
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_backup_24dp),
+                    title = stringResource(R.string.title_configuration_backup),
+                    onClick = { showBackupDialog = true }
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_share_24dp),
+                    title = stringResource(R.string.title_configuration_share),
+                    onClick = onShareClick
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_restore_24dp),
+                    title = stringResource(R.string.title_configuration_restore),
+                    onClick = { showRestoreDialog = true }
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_delete_24dp),
+                    title = stringResource(R.string.title_profile_storage_cleanup),
+                    subtitle = stringResource(R.string.summary_profile_storage_cleanup),
+                    onClick = { showCleanupDialog = true }
+                )
+            }
+            V2NgSectionCard(modifier = Modifier.fillMaxWidth()) {
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_settings_24dp),
+                    title = stringResource(R.string.title_webdav_config_setting),
+                    subtitle = webDavSummary,
+                    onClick = { showWebDavDialog = true }
+                )
+            }
             NavigationBarsSpacer()
         }
     }

@@ -912,5 +912,14 @@
     <string name="v2ng_pref_compact_cards">Compact Server Cards</string>
     <string name="v2ng_summary_compact_cards">Use denser spacing for server lists</string>
     <string name="v2ng_about_engine">Powered by the PattNG Xray &amp; Aether VPN engine (GPL-3.0).</string>
+    <string name="v2ng_connection_info">Connection Info</string>
+    <string name="v2ng_subscription_plan">Subscription</string>
+    <string name="v2ng_expires_on">Expires %1$s</string>
+    <string name="v2ng_no_expiry">No expiration</string>
+    <string name="v2ng_ready_to_connect">Ready to establish encrypted tunnel</string>
+    <string name="v2ng_core_settings_button">All Core &amp; VPN Settings</string>
+    <string name="v2ng_core_settings_summary">DNS, TUN, mux, observatory, proxy ports &amp; root</string>
+    <string name="v2ng_acc_connect_button">Toggle VPN connection</string>
+    <string name="v2ng_servers_count">%1$d servers</string>
 
 </resources>

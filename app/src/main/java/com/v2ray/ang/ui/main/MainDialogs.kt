@@ -153,6 +153,6 @@ private fun DonateDialog(onCopy: (String) -> Unit, onOpenAuthor: () -> Unit, onD
                 Text(stringResource(R.string.action_ok))
             }
         },
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
     )
 }

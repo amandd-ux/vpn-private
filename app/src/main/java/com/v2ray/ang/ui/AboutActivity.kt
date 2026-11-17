@@ -3,10 +3,13 @@ package com.v2ray.ang.ui
 import android.content.Intent
 import android.os.Bundle
 import android.webkit.WebView
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -32,10 +35,15 @@ import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.core.CoreNativeManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
+import com.v2ray.ang.ui.compose.AppDivider
 import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.NavigationBarsSpacer
 import com.v2ray.ang.ui.compose.SettingsMenuItem
+import com.v2ray.ang.ui.compose.V2NgBrandLockup
+import com.v2ray.ang.ui.compose.V2NgCard
+import com.v2ray.ang.ui.compose.V2NgSectionCard
 import com.v2ray.ang.ui.compose.VersionInfoBlock
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.util.Utils
 
 class AboutActivity : BaseComponentActivity() {
@@ -72,50 +80,71 @@ fun AboutScreen(
         topBar = {
             AppTopBar(
                 title = stringResource(R.string.title_about),
-                onBackClick = onBackClick
+                onBackClick = onBackClick,
+                containerColor = MaterialTheme.colorScheme.background
             )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_source_code_24dp),
-                title = stringResource(R.string.title_source_code),
-                onClick = { Utils.openUri(context, AppConfig.APP_URL) }
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.license_24px),
-                title = stringResource(R.string.title_oss_license),
-                onClick = { showOssDialog = true }
-            )
-            // The Aether binary is not a Gradle dependency, so the generated license report
-            // cannot list it; its AGPL-3.0 notice and source link live here instead.
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.license_24px),
-                title = stringResource(R.string.title_aether_core),
-                subtitle = stringResource(R.string.summary_aether_core),
-                onClick = { Utils.openUri(context, AppConfig.AETHER_URL) }
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_translate_24dp),
-                title = stringResource(R.string.title_translators),
-                onClick = onTranslatorsClick
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_feedback_24dp),
-                title = stringResource(R.string.title_pref_feedback),
-                onClick = { Utils.openUri(context, AppConfig.APP_ISSUES_URL) }
-            )
-            // PattNG: the Telegram channel is in the main drawer, in the place of upstream's Promotion.
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_privacy_24dp),
-                title = stringResource(R.string.title_privacy_policy),
-                onClick = { Utils.openUri(context, AppConfig.APP_PRIVACY_POLICY) }
-            )
+            V2NgCard(modifier = Modifier.fillMaxWidth()) {
+                V2NgBrandLockup(logoSize = 44.dp, showTagline = true)
+                Spacer(modifier = Modifier.height(10.dp))
+                Text(
+                    text = stringResource(R.string.v2ng_about_engine),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+
+            V2NgSectionCard(modifier = Modifier.fillMaxWidth()) {
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_source_code_24dp),
+                    title = stringResource(R.string.title_source_code),
+                    onClick = { Utils.openUri(context, AppConfig.APP_URL) }
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.license_24px),
+                    title = stringResource(R.string.title_oss_license),
+                    onClick = { showOssDialog = true }
+                )
+                AppDivider()
+                // The Aether binary is not a Gradle dependency, so the generated license report
+                // cannot list it; its AGPL-3.0 notice and source link live here instead.
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.license_24px),
+                    title = stringResource(R.string.title_aether_core),
+                    subtitle = stringResource(R.string.summary_aether_core),
+                    onClick = { Utils.openUri(context, AppConfig.AETHER_URL) }
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_translate_24dp),
+                    title = stringResource(R.string.title_translators),
+                    onClick = onTranslatorsClick
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_feedback_24dp),
+                    title = stringResource(R.string.title_pref_feedback),
+                    onClick = { Utils.openUri(context, AppConfig.APP_ISSUES_URL) }
+                )
+                AppDivider()
+                // PattNG: the Telegram channel is in the main drawer, in the place of upstream's Promotion.
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_privacy_24dp),
+                    title = stringResource(R.string.title_privacy_policy),
+                    onClick = { Utils.openUri(context, AppConfig.APP_PRIVACY_POLICY) }
+                )
+            }
             VersionInfoBlock(
                 versionText = versionText,
                 appIdText = appIdText
@@ -145,7 +174,7 @@ fun AboutScreen(
                     Text(stringResource(R.string.action_ok))
                 }
             },
-            containerColor = MaterialTheme.colorScheme.surface,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             modifier = Modifier.padding(bottom = 60.dp)
         )
     }

@@ -20,6 +20,9 @@ sealed class MainServiceEvent {
     /** Servers, subscriptions or test results changed away from this screen. */
     data object ServersChanged : MainServiceEvent()
 
+    /** Real traffic counters updated by NotificationManager / TrafficStatsManager. */
+    data object TrafficStatsUpdated : MainServiceEvent()
+
     companion object {
 
         /**

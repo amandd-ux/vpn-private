@@ -2,6 +2,7 @@ package com.v2ray.ang.ui.checkupdate
 
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,16 +21,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.v2ray.ang.BuildConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.core.CoreNativeManager
 import com.v2ray.ang.ui.base.BaseComponentActivity
+import com.v2ray.ang.ui.compose.AppDivider
 import com.v2ray.ang.ui.compose.AppTopBar
 import com.v2ray.ang.ui.compose.NavigationBarsSpacer
 import com.v2ray.ang.ui.compose.SettingsMenuItem
 import com.v2ray.ang.ui.compose.SettingsSwitchItem
+import com.v2ray.ang.ui.compose.V2NgSectionCard
 import com.v2ray.ang.ui.compose.VersionInfoBlock
+import com.v2ray.ang.ui.compose.v2ngScreenBackground
 import com.v2ray.ang.ui.compose.verticalScrollbar
 import com.v2ray.ang.util.Utils
 
@@ -71,27 +76,34 @@ fun CheckUpdateScreen(
             AppTopBar(
                 title = stringResource(R.string.update_check_for_update),
                 onBackClick = onBackClick,
-                isLoading = isLoading
+                isLoading = isLoading,
+                containerColor = MaterialTheme.colorScheme.background
             )
         }
     ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .v2ngScreenBackground(ambientGlow = false)
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            SettingsSwitchItem(
-                icon = painterResource(R.drawable.ic_source_code_24dp),
-                title = stringResource(R.string.update_check_pre_release),
-                checked = checkPreRelease,
-                onCheckedChange = { viewModel.toggleCheckPreRelease(it) }
-            )
-            SettingsMenuItem(
-                icon = painterResource(R.drawable.ic_check_update_24dp),
-                title = stringResource(R.string.update_check_for_update),
-                onClick = { viewModel.checkForUpdates() }
-            )
+            V2NgSectionCard(modifier = Modifier.fillMaxWidth()) {
+                SettingsSwitchItem(
+                    icon = painterResource(R.drawable.ic_source_code_24dp),
+                    title = stringResource(R.string.update_check_pre_release),
+                    checked = checkPreRelease,
+                    onCheckedChange = { viewModel.toggleCheckPreRelease(it) }
+                )
+                AppDivider()
+                SettingsMenuItem(
+                    icon = painterResource(R.drawable.ic_check_update_24dp),
+                    title = stringResource(R.string.update_check_for_update),
+                    onClick = { viewModel.checkForUpdates() }
+                )
+            }
             VersionInfoBlock(versionText = versionText)
             NavigationBarsSpacer()
         }
@@ -125,7 +137,7 @@ fun CheckUpdateScreen(
                     Text(stringResource(R.string.action_cancel))
                 }
             },
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
         )
     }
 }

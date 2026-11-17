@@ -96,13 +96,14 @@ internal fun SubscriptionInfoCard(
     Surface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp),
-        shape = MaterialTheme.shapes.medium,
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        shape = RoundedCornerShape(18.dp),
         // Almost opaque: the list scrolls underneath without showing through readably.
         color = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = CARD_ALPHA),
-        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f)),
+        border = BorderStroke(0.8.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.68f)),
+        shadowElevation = 4.dp,
     ) {
-        Column(Modifier.padding(start = 16.dp, end = 8.dp, top = 2.dp, bottom = 10.dp)) {
+        Column(Modifier.padding(start = 16.dp, end = 10.dp, top = 6.dp, bottom = 12.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = model.title ?: fallbackTitle,

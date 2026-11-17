@@ -56,7 +56,8 @@ fun MainTopBar(
         searchQuery = searchQuery,
         onSearchQueryChange = onSearchQueryChange,
         onSearchClose = onSearchClose,
-        searchPlaceholder = stringResource(R.string.menu_item_search),
+        searchPlaceholder = stringResource(R.string.v2ng_search_servers),
+        containerColor = MaterialTheme.colorScheme.background,
         navigationIcon = {
             if (showSearch) {
                 IconButton(onClick = onSearchClose) {
@@ -86,7 +87,7 @@ fun MainTopBar(
                     expanded = showImportMenu,
                     onDismissRequest = { showImportMenu = false },
                     scrollState = importMenuScrollState,
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     modifier = Modifier
                         .heightIn(max = maxMenuHeight)
                         .verticalScrollbar(importMenuScrollState)
@@ -107,7 +108,7 @@ fun MainTopBar(
                     expanded = showMenu,
                     onDismissRequest = { showMenu = false },
                     scrollState = moreMenuScrollState,
-                    containerColor = MaterialTheme.colorScheme.surface,
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     modifier = Modifier
                         .heightIn(max = maxMenuHeight)
                         .verticalScrollbar(moreMenuScrollState)
