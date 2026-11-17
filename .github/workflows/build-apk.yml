@@ -29,25 +29,27 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-                  packages: platform-tools platforms;android-36 build-tools;36.0.0
-      - name: Check libv2ray binding
+          packages: |
+            platform-tools
+            platforms;android-36
+            build-tools;36.0.0
+
+      - name: Verify native libraries
         shell: bash
         run: |
-          mapfile -t bindings < <(
-            find app/libs -type f \( -name '*.aar' -o -name '*.jar' \) -print
-          )
-
-          if (( ${#bindings[@]} == 0 )); then
-            echo "::error::No AAR/JAR found under app/libs. Add a libv2ray artifact compatible with the Kotlin sources before building."
+          set -euo pipefail
+          if ! find app/libs -type f -name '*.so' -print -quit | grep -q .; then
+            echo "::error::No native .so libraries found under app/libs."
             exit 1
           fi
-
-          printf 'Found library artifact: %s\n' "${bindings[@]}"
+          echo "Native libraries found:"
+          find app/libs -type f -name '*.so' -print
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -68,7 +70,11 @@ jobs:
             -dname "CN=Android Debug,O=Android,C=US"
 
       - name: Build debug APK
-        run: gradle --no-daemon :app:assembleDebug
+        run: gradle --no-daemon --stacktrace :app:assembleDebug
+
+      - name: Verify APK exists
+        shell: bash
+        run: test -s app/build/outputs/apk/debug/app-debug.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -76,3 +82,4 @@ jobs:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          retention-days: 14
