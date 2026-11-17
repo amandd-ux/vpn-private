@@ -3,14 +3,21 @@ name: Build APK
 on:
   push:
     branches: [main]
+  pull_request:
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    name: Compile and build debug APK
     runs-on: ubuntu-latest
+    timeout-minutes: 45
 
     steps:
       - name: Checkout
@@ -25,11 +32,11 @@ jobs:
       - name: Set up Android SDK
         shell: bash
         run: |
-          set -e
+          set -euo pipefail
 
           ANDROID_HOME="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
           if [[ ! -d "$ANDROID_HOME" ]]; then
-            echo "Android SDK directory not found: $ANDROID_HOME"
+            echo "::error::Android SDK directory not found: $ANDROID_HOME"
             exit 1
           fi
 
@@ -39,18 +46,14 @@ jobs:
 
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager -print 2>/dev/null | sort -V | tail -n 1)"
           if [[ -z "$SDKMANAGER" ]]; then
-            echo "Could not find sdkmanager under $ANDROID_HOME/cmdline-tools"
+            echo "::error::Could not find sdkmanager under $ANDROID_HOME/cmdline-tools"
             exit 1
           fi
 
-          echo "Using sdkmanager: $SDKMANAGER"
-
-          # Accept Android SDK licenses.
           set +o pipefail
           yes | "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --licenses
           set -o pipefail
 
-          # Install the platform required by compileSdk and the build tools.
           "$SDKMANAGER" --sdk_root="$ANDROID_HOME" --install \
             "platform-tools" \
             "platforms;android-36.1" \
@@ -62,6 +65,7 @@ jobs:
           gradle-version: "9.3.1"
 
       - name: Create debug keystore
+        shell: bash
         run: |
           keytool -genkeypair -v \
             -keystore debug.keystore \
@@ -73,6 +77,9 @@ jobs:
             -validity 10000 \
             -dname "CN=Android Debug,O=Android,C=US"
 
+      - name: Compile Kotlin
+        run: gradle --no-daemon :app:compileDebugKotlin
+
       - name: Build debug APK
         run: gradle --no-daemon :app:assembleDebug
 
@@ -81,3 +88,4 @@ jobs:
         with:
           name: app-debug
           path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
